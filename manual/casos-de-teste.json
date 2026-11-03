@@ -1,0 +1,469 @@
+{
+  "projeto": "PetHub",
+  "sprint": "Sprint 4",
+  "casos": [
+    {
+      "id": "CT01",
+      "titulo": "Cadastro de tutor pelo site",
+      "modulo": "Web (pethub-java) - Autenticação",
+      "prioridade": 1,
+      "objetivo": "Validar que uma pessoa sem conta consegue se cadastrar como tutor (perfil RESPONSAVEL) pela tela pública e que a senha é gravada com hash BCrypt.",
+      "precondicoes": "pethub-java rodando em http://localhost:8080; e-mail ana.teste@pethub.com e CPF 39053344705 ainda não cadastrados.",
+      "entrada": {"Nome": "Ana Teste", "CPF": "39053344705", "E-mail": "ana.teste@pethub.com", "Senha": "Teste@123"},
+      "saida": [
+        "Redirecionamento para /login?registered",
+        "Mensagem: \"Cadastro realizado! Já pode entrar com o seu e-mail e senha.\"",
+        "1 linha em TB_RESPONSAVEL com EMAIL = ana.teste@pethub.com e SENHA iniciando por $2a$ (hash BCrypt, nunca o texto puro)"
+      ],
+      "passos": [
+        ["Abrir http://localhost:8080/login", "Tela de login do PetHub exibida"],
+        ["Clicar no link \"Sou Tutor\"", "Formulário /registrar/tutor exibido"],
+        ["Preencher Nome, CPF, E-mail e Senha com os dados de entrada", "Campos aceitos, sem mensagem de erro"],
+        ["Clicar em \"Cadastrar\"", "Redireciona para /login?registered com a mensagem \"Cadastro realizado! Já pode entrar com o seu e-mail e senha.\""],
+        ["No banco, executar SELECT EMAIL, SENHA FROM TB_RESPONSAVEL WHERE EMAIL = 'ana.teste@pethub.com'", "1 linha retornada; SENHA começa com $2a$"]
+      ]
+    },
+    {
+      "id": "CT02",
+      "titulo": "Cadastro de tutor com e-mail já existente",
+      "modulo": "Web (pethub-java) - Autenticação",
+      "prioridade": 2,
+      "objetivo": "Validar que o sistema recusa um segundo cadastro com o mesmo e-mail e mostra o erro no próprio formulário.",
+      "precondicoes": "CT01 executado com sucesso (ana.teste@pethub.com já existe).",
+      "entrada": {"Nome": "Ana Duplicada", "CPF": "11144477735", "E-mail": "ana.teste@pethub.com", "Senha": "Teste@123"},
+      "saida": [
+        "Permanece no formulário /registrar/tutor",
+        "Mensagem sob o campo E-mail: \"O email ana.teste@pethub.com já está cadastrado no sistema\"",
+        "Nenhuma linha nova em TB_RESPONSAVEL (COUNT por e-mail continua 1)"
+      ],
+      "passos": [
+        ["Abrir http://localhost:8080/registrar/tutor", "Formulário de cadastro de tutor exibido"],
+        ["Preencher os campos com os dados de entrada", "Campos aceitos"],
+        ["Clicar em \"Cadastrar\"", "Formulário é exibido de novo com a mensagem de e-mail duplicado sob o campo E-mail"],
+        ["No banco, executar SELECT COUNT(*) FROM TB_RESPONSAVEL WHERE EMAIL = 'ana.teste@pethub.com'", "Resultado = 1"]
+      ]
+    },
+    {
+      "id": "CT03",
+      "titulo": "Login válido de tutor",
+      "modulo": "Web (pethub-java) - Autenticação",
+      "prioridade": 1,
+      "objetivo": "Validar que um tutor com credenciais corretas entra no sistema e cai no painel do seu perfil, vendo apenas os seus pets.",
+      "precondicoes": "Seed docs/seed_demo_video.sql carregado; nenhum usuário logado no navegador.",
+      "entrada": {"E-mail": "joao_video@demo.com", "Senha": "123456"},
+      "saida": [
+        "Redirecionamento para /tutor/dashboard",
+        "Título: \"Bem-vindo(a), João (Tutor A)!\"",
+        "Lista de pets contém \"Rex – Cachorro\" e não contém \"Mimi\""
+      ],
+      "passos": [
+        ["Abrir http://localhost:8080/login", "Tela de login exibida"],
+        ["Preencher E-mail e Senha com os dados de entrada", "Campos aceitos"],
+        ["Clicar em \"Entrar\"", "Redireciona para /tutor/dashboard"],
+        ["Conferir o título e a lista de pets", "Título \"Bem-vindo(a), João (Tutor A)!\"; lista com \"Rex – Cachorro\" e sem \"Mimi\""]
+      ]
+    },
+    {
+      "id": "CT04",
+      "titulo": "Login com senha incorreta",
+      "modulo": "Web (pethub-java) - Autenticação",
+      "prioridade": 1,
+      "objetivo": "Validar que credenciais inválidas não dão acesso e que o usuário recebe uma mensagem genérica (sem revelar se o e-mail existe).",
+      "precondicoes": "Seed carregado; nenhum usuário logado.",
+      "entrada": {"E-mail": "joao_video@demo.com", "Senha": "senhaErrada1"},
+      "saida": [
+        "Permanece em /login?error",
+        "Mensagem: \"E-mail ou senha inválidos.\"",
+        "Acessar /tutor/dashboard em seguida redireciona para /login (sem sessão)"
+      ],
+      "passos": [
+        ["Abrir http://localhost:8080/login", "Tela de login exibida"],
+        ["Preencher E-mail e Senha com os dados de entrada e clicar em \"Entrar\"", "URL /login?error com a mensagem \"E-mail ou senha inválidos.\""],
+        ["Digitar http://localhost:8080/tutor/dashboard na barra de endereço", "Sistema redireciona para /login"]
+      ]
+    },
+    {
+      "id": "CT05",
+      "titulo": "Cadastro de pet pelo tutor",
+      "modulo": "Web (pethub-java) - Pets",
+      "prioridade": 1,
+      "objetivo": "Validar que o tutor logado cadastra um pet e que ele passa a aparecer no seu painel, vinculado a ele.",
+      "precondicoes": "Logado como joao_video@demo.com (CT03).",
+      "entrada": {"Nome": "Thor", "Espécie": "Cachorro", "Raça": "Beagle", "Idade (anos)": "4", "Peso (kg)": "12.5", "Gênero": "Macho"},
+      "saida": [
+        "Redirecionamento para /tutor/dashboard",
+        "Lista de pets contém \"Rex – Cachorro\" e \"Thor – Cachorro\"",
+        "Prontuário de Thor (/tutor/pets/{id}) mostra Beagle, 4 anos, 12.5 kg, Macho"
+      ],
+      "passos": [
+        ["No painel do tutor, clicar em cadastrar novo pet (/tutor/pets/novo)", "Formulário \"Cadastrar novo pet\" exibido"],
+        ["Preencher os campos com os dados de entrada", "Campos aceitos"],
+        ["Clicar em \"Salvar pet\"", "Redireciona para /tutor/dashboard com \"Thor – Cachorro\" na lista"],
+        ["Clicar em \"Thor\"", "Prontuário exibe Beagle, 4 anos, 12.5 kg, Macho"]
+      ]
+    },
+    {
+      "id": "CT06",
+      "titulo": "Isolamento de dados entre tutores",
+      "modulo": "Web (pethub-java) - Segurança",
+      "prioridade": 1,
+      "objetivo": "Validar que um tutor não consegue ver o pet de outro tutor, nem pela lista nem digitando a URL direta.",
+      "precondicoes": "Seed carregado. Anotar o ID do Rex: SELECT ID FROM TB_PET WHERE NOME = 'Rex' (valor = {idRex}).",
+      "entrada": {"E-mail": "maria_video@demo.com", "Senha": "123456", "URL acessada": "http://localhost:8080/tutor/pets/{idRex}"},
+      "saida": [
+        "Painel de Maria lista apenas \"Mimi – Gato\"",
+        "A URL do Rex devolve a página de erro 404 (\"Página não encontrada\")",
+        "Nenhum dado do Rex é exibido"
+      ],
+      "passos": [
+        ["Fazer login com maria_video@demo.com / 123456", "Painel /tutor/dashboard com \"Bem-vindo(a), Maria (Tutor B)!\""],
+        ["Conferir a lista de pets", "Somente \"Mimi – Gato\""],
+        ["Digitar http://localhost:8080/tutor/pets/{idRex} na barra de endereço", "Página de erro 404 \"Página não encontrada\"; nenhum dado do Rex"]
+      ]
+    },
+    {
+      "id": "CT07",
+      "titulo": "Controle de acesso por perfil",
+      "modulo": "Web (pethub-java) - Segurança",
+      "prioridade": 1,
+      "objetivo": "Validar que um tutor não acessa as telas do veterinário.",
+      "precondicoes": "Logado como joao_video@demo.com.",
+      "entrada": {"URL acessada": "http://localhost:8080/vet/dashboard"},
+      "saida": [
+        "Página de erro com código 403",
+        "Título: \"Esta área não é do seu perfil\"",
+        "Agenda do veterinário não é exibida"
+      ],
+      "passos": [
+        ["Com o tutor logado, digitar http://localhost:8080/vet/dashboard", "Página 403 \"Esta área não é do seu perfil\""],
+        ["Clicar em \"Voltar ao início\"", "Volta para /tutor/dashboard"]
+      ]
+    },
+    {
+      "id": "CT08",
+      "titulo": "Agendamento de consulta com agenda livre",
+      "modulo": "Web (pethub-java) - Consultas",
+      "prioridade": 1,
+      "objetivo": "Validar o fluxo de agendamento: a consulta é criada como AGENDADA e o sistema gera automaticamente o lembrete do tutor.",
+      "precondicoes": "Seed carregado; nenhuma consulta do Dr. Roberto em 15/12/2026 10:00.",
+      "entrada": {"Login": "vet_video@pethub.com / 123456", "Pet": "Rex (Cachorro)", "Data e hora": "15/12/2026 10:00", "Tipo": "PRESENCIAL", "Motivo": "Check-up pré-viagem"},
+      "saida": [
+        "Redirecionamento para /vet/dashboard",
+        "Card \"Consulta de 15/12/2026 10:00\" com status AGENDADA, Pet Rex, Motivo \"Check-up pré-viagem\"",
+        "No login do João, /tutor/lembretes mostra lembrete CONSULTA, PENDENTE, 15/12/2026, \"Pet: Rex\""
+      ],
+      "passos": [
+        ["Fazer login com vet_video@pethub.com / 123456", "Painel /vet/dashboard \"Painel do veterinário: Dr. Roberto\""],
+        ["Abrir /vet/consultas/nova", "Formulário de agendamento exibido"],
+        ["Selecionar Pet, Data e hora, Tipo e preencher Motivo com os dados de entrada", "Campos aceitos"],
+        ["Clicar em \"Agendar consulta\"", "Volta ao painel com o card da consulta 15/12/2026 10:00 AGENDADA"],
+        ["Sair e entrar como joao_video@demo.com; abrir /tutor/lembretes", "Lembrete CONSULTA PENDENTE para 15/12/2026, Pet: Rex"]
+      ]
+    },
+    {
+      "id": "CT09",
+      "titulo": "Agendamento em horário já ocupado",
+      "modulo": "Web (pethub-java) - Consultas",
+      "prioridade": 1,
+      "objetivo": "Validar a regra de agenda livre: o mesmo veterinário não pode ter duas consultas no mesmo horário.",
+      "precondicoes": "CT08 executado (Dr. Roberto ocupado em 15/12/2026 10:00). Logado como vet_video@pethub.com.",
+      "entrada": {"Pet": "Mimi (Gato)", "Data e hora": "15/12/2026 10:00", "Tipo": "PRESENCIAL", "Motivo": "Vacinação"},
+      "saida": [
+        "Permanece no formulário de nova consulta",
+        "Mensagem sob Data e hora: \"Este veterinário já tem uma consulta marcada neste horário.\"",
+        "Nenhuma consulta nova da Mimi em 15/12/2026"
+      ],
+      "passos": [
+        ["Abrir /vet/consultas/nova", "Formulário de agendamento exibido"],
+        ["Preencher com os dados de entrada e clicar em \"Agendar consulta\"", "Mensagem de agenda ocupada sob o campo Data e hora"],
+        ["Voltar ao painel", "Não existe card da Mimi em 15/12/2026 10:00"]
+      ]
+    },
+    {
+      "id": "CT10",
+      "titulo": "Agendamento em data passada",
+      "modulo": "Web (pethub-java) - Consultas",
+      "prioridade": 2,
+      "objetivo": "Validar a regra de horário futuro: não é possível agendar consulta para uma data que já passou.",
+      "precondicoes": "Logado como vet_video@pethub.com.",
+      "entrada": {"Pet": "Mimi (Gato)", "Data e hora": "10/01/2026 10:00", "Tipo": "PRESENCIAL", "Motivo": "Retorno"},
+      "saida": [
+        "Permanece no formulário",
+        "Mensagem: \"Não é possível agendar uma consulta para uma data que já passou.\"",
+        "Nenhuma consulta criada"
+      ],
+      "passos": [
+        ["Abrir /vet/consultas/nova", "Formulário exibido"],
+        ["Preencher com os dados de entrada e clicar em \"Agendar consulta\"", "Mensagem de data passada exibida; consulta não criada"]
+      ]
+    },
+    {
+      "id": "CT11",
+      "titulo": "Prontuário com pedido de exame incompleto",
+      "modulo": "Web (pethub-java) - Prontuário",
+      "prioridade": 2,
+      "objetivo": "Validar que o veterinário não consegue emitir um pedido de exame sem descrição.",
+      "precondicoes": "CT08 executado (consulta do Rex em 15/12/2026 AGENDADA). Logado como vet_video@pethub.com.",
+      "entrada": {"Sintoma principal": "Tosse seca", "Doença suspeita": "Traqueobronquite", "Tipo do pedido": "EXAME", "Descrição": "(vazio)"},
+      "saida": [
+        "Permanece na tela da consulta",
+        "Mensagem sob Descrição: \"Para solicitar um exame, preencha o tipo e a descrição.\"",
+        "Consulta continua AGENDADA; nenhum diagnóstico gravado"
+      ],
+      "passos": [
+        ["No painel, abrir a consulta de 15/12/2026 10:00 (Rex)", "Tela \"Consulta de 15/12/2026 10:00\" com o formulário de prontuário"],
+        ["Preencher Sintoma principal, Doença suspeita e Tipo = EXAME, deixando Descrição vazia", "Campos aceitos"],
+        ["Clicar em \"Registrar prontuário e concluir consulta\"", "Mensagem de pedido incompleto; status continua AGENDADA"]
+      ]
+    },
+    {
+      "id": "CT12",
+      "titulo": "Registro do prontuário e conclusão da consulta",
+      "modulo": "Web (pethub-java) - Prontuário",
+      "prioridade": 1,
+      "objetivo": "Validar o fluxo transacional: diagnóstico, pedido de exame e conclusão da consulta gravados juntos, com lembrete automático do exame para o tutor.",
+      "precondicoes": "CT11 executado (consulta do Rex ainda AGENDADA). Logado como vet_video@pethub.com.",
+      "entrada": {"Sintoma principal": "Tosse seca", "Doença suspeita": "Traqueobronquite", "Tipo do pedido": "EXAME", "Descrição": "Raio-X de tórax", "Instruções": "Jejum de 8 horas"},
+      "saida": [
+        "Redirecionamento para /vet/dashboard; consulta de 15/12/2026 com status REALIZADA",
+        "Prontuário do Rex (login do João) mostra o diagnóstico \"Tosse seca\" / \"Traqueobronquite\" e o pedido EXAME \"Raio-X de tórax\"",
+        "Lembrete EXAME PENDENTE para o João, com data = data de execução + 7 dias"
+      ],
+      "passos": [
+        ["Abrir a consulta de 15/12/2026 10:00 (Rex)", "Formulário de prontuário exibido"],
+        ["Preencher todos os campos com os dados de entrada", "Campos aceitos"],
+        ["Clicar em \"Registrar prontuário e concluir consulta\"", "Volta ao painel; consulta com status REALIZADA"],
+        ["Sair, entrar como joao_video@demo.com e abrir o prontuário do Rex", "Diagnóstico e pedido de exame exibidos"],
+        ["Abrir /tutor/lembretes", "Lembrete EXAME PENDENTE com prazo de 7 dias"]
+      ]
+    },
+    {
+      "id": "CT13",
+      "titulo": "Bloqueio de prontuário duplicado",
+      "modulo": "Web (pethub-java) - Prontuário",
+      "prioridade": 2,
+      "objetivo": "Validar a guarda de idempotência: uma consulta já realizada não aceita um segundo prontuário.",
+      "precondicoes": "CT12 executado. Logado como vet_video@pethub.com.",
+      "entrada": {"Consulta": "Rex - 15/12/2026 10:00 (REALIZADA)"},
+      "saida": [
+        "Tela da consulta mostra \"O prontuário desta consulta já foi registrado.\"",
+        "Formulário de prontuário não é exibido",
+        "TB_DIAGNOSTICO continua com 1 linha para essa consulta"
+      ],
+      "passos": [
+        ["No painel, abrir a consulta de 15/12/2026 10:00", "Aviso de prontuário já registrado; sem formulário"],
+        ["No banco, contar TB_DIAGNOSTICO pela CONSULTA_ID dessa consulta", "Resultado = 1"]
+      ]
+    },
+    {
+      "id": "CT14",
+      "titulo": "Tutor dá baixa em lembrete",
+      "modulo": "Web (pethub-java) - Lembretes",
+      "prioridade": 2,
+      "objetivo": "Validar que o tutor marca um lembrete como visto e que o status muda para ENVIADO.",
+      "precondicoes": "CT08 executado. Logado como joao_video@demo.com.",
+      "entrada": {"Lembrete": "CONSULTA - 15/12/2026 - Pet: Rex (PENDENTE)"},
+      "saida": [
+        "Lembrete passa a exibir status ENVIADO",
+        "Botão \"Marcar como visto\" some desse lembrete",
+        "Contador de pendentes no painel diminui 1"
+      ],
+      "passos": [
+        ["Anotar o número do contador de lembretes pendentes no painel", "Valor N anotado"],
+        ["Abrir /tutor/lembretes", "Lembrete CONSULTA 15/12/2026 com status PENDENTE"],
+        ["Clicar em \"Marcar como visto\" nesse lembrete", "Página recarrega; status ENVIADO e sem botão"],
+        ["Voltar ao painel", "Contador mostra N - 1"]
+      ]
+    },
+    {
+      "id": "CT15",
+      "titulo": "API .NET - Cadastro de responsável",
+      "modulo": "API Vitalis (.NET) - Responsável",
+      "prioridade": 1,
+      "objetivo": "Validar o cadastro de responsável pela API do app mobile, com retorno 201 e sem expor a senha.",
+      "precondicoes": "API Vitalis rodando em http://localhost:5192; CPF 52998224725 não cadastrado.",
+      "entrada": {"Método/URL": "POST http://localhost:5192/api/responsavel/cadastro", "Body": "{\"nome\":\"Carlos Teste\",\"cpf\":\"52998224725\",\"email\":\"carlos.teste@pethub.com\",\"senha\":\"Teste@123\"}"},
+      "saida": [
+        "HTTP 201 Created",
+        "Body: {\"id\": <n>, \"nome\": \"Carlos Teste\", \"email\": \"carlos.teste@pethub.com\"} (sem campo senha)",
+        "Header Location: /api/responsavel/<n>; guardar <n> como {idCarlos}"
+      ],
+      "passos": [
+        ["Abrir o Swagger (http://localhost:5192/swagger) ou o Postman", "Endpoint POST /api/responsavel/cadastro disponível"],
+        ["Enviar a requisição com o Body de entrada", "HTTP 201 com id, nome e e-mail"],
+        ["GET /api/responsavel/{idCarlos}", "HTTP 200 com ativo = true e listas enderecos/contatos vazias"]
+      ]
+    },
+    {
+      "id": "CT16",
+      "titulo": "API .NET - Cadastro com CPF duplicado e dados inválidos",
+      "modulo": "API Vitalis (.NET) - Responsável",
+      "prioridade": 2,
+      "objetivo": "Validar que a API recusa CPF repetido (409) e dados fora do formato (400).",
+      "precondicoes": "CT15 executado.",
+      "entrada": {"Requisição 1": "POST /api/responsavel/cadastro {\"nome\":\"Carlos Dois\",\"cpf\":\"52998224725\",\"email\":\"carlos.dois@pethub.com\",\"senha\":\"Teste@123\"}", "Requisição 2": "POST /api/responsavel/cadastro {\"nome\":\"Sem Senha\",\"cpf\":\"16899535009\",\"email\":\"email-invalido\"}"},
+      "saida": [
+        "Requisição 1: HTTP 409 com {\"erro\": \"CPF já cadastrado\"}",
+        "Requisição 2: HTTP 400 com erros de validação nos campos Email e Senha",
+        "Nenhum responsável novo criado"
+      ],
+      "passos": [
+        ["Enviar a Requisição 1", "HTTP 409 {\"erro\":\"CPF já cadastrado\"}"],
+        ["Enviar a Requisição 2", "HTTP 400 listando Email e Senha"],
+        ["GET /api/responsavel e procurar os CPFs 16899535009 e o e-mail carlos.dois@pethub.com", "Nenhum dos dois aparece"]
+      ]
+    },
+    {
+      "id": "CT17",
+      "titulo": "API .NET - Login do responsável",
+      "modulo": "API Vitalis (.NET) - Responsável",
+      "prioridade": 1,
+      "objetivo": "Validar a autenticação do responsável usada pelo app: senha certa autentica, senha errada é recusada.",
+      "precondicoes": "CT15 executado.",
+      "entrada": {"Requisição 1": "POST /api/responsavel/login {\"email\":\"carlos.teste@pethub.com\",\"senha\":\"Teste@123\"}", "Requisição 2": "POST /api/responsavel/login {\"email\":\"carlos.teste@pethub.com\",\"senha\":\"errada123\"}"},
+      "saida": [
+        "Requisição 1: HTTP 200 com {\"id\": {idCarlos}, \"nome\": \"Carlos Teste\", \"email\": \"carlos.teste@pethub.com\"}",
+        "Requisição 2: HTTP 401 com {\"erro\": \"Credenciais inválidas\"}"
+      ],
+      "passos": [
+        ["Enviar a Requisição 1", "HTTP 200 com os dados do Carlos"],
+        ["Enviar a Requisição 2", "HTTP 401 {\"erro\":\"Credenciais inválidas\"}"]
+      ]
+    },
+    {
+      "id": "CT18",
+      "titulo": "API .NET - Endereço do responsável e endereço principal",
+      "modulo": "API Vitalis (.NET) - Endereços",
+      "prioridade": 2,
+      "objetivo": "Validar o cadastro de endereço e a marcação de endereço principal.",
+      "precondicoes": "CT15 executado ({idCarlos} conhecido).",
+      "entrada": {"Método/URL": "POST /api/responsavel/{idCarlos}/enderecos", "Body": "{\"logradouro\":\"Av. Paulista\",\"numero\":\"1106\",\"complemento\":\"Ap 52\",\"bairro\":\"Bela Vista\",\"cidade\":\"São Paulo\",\"estado\":\"SP\",\"cep\":\"01311000\",\"principal\":false}"},
+      "saida": [
+        "POST: HTTP 201 com o endereço e o id gerado ({idEnd})",
+        "PATCH /api/responsavel/{idCarlos}/enderecos/{idEnd}/principal: HTTP 204",
+        "GET /api/responsavel/{idCarlos}/enderecos: 1 endereço com principal = true",
+        "GET /api/responsavel/999999/enderecos/{idEnd}: HTTP 404 {\"erro\":\"Endereço não encontrado\"}"
+      ],
+      "passos": [
+        ["Enviar o POST com o Body de entrada", "HTTP 201; anotar {idEnd}"],
+        ["Enviar PATCH /api/responsavel/{idCarlos}/enderecos/{idEnd}/principal", "HTTP 204"],
+        ["Enviar GET /api/responsavel/{idCarlos}/enderecos", "Endereço Av. Paulista, 1106 com principal = true"],
+        ["Enviar GET /api/responsavel/999999/enderecos/{idEnd}", "HTTP 404 Endereço não encontrado"]
+      ]
+    },
+    {
+      "id": "CT19",
+      "titulo": "API .NET - Contato do responsável",
+      "modulo": "API Vitalis (.NET) - Contatos",
+      "prioridade": 2,
+      "objetivo": "Validar o cadastro de contato (telefone usado nos lembretes de WhatsApp) e sua consulta.",
+      "precondicoes": "CT15 executado.",
+      "entrada": {"Método/URL": "POST /api/responsavel/{idCarlos}/contatos", "Body": "{\"tipo\":\"CELULAR\",\"telefone\":\"11987654321\",\"principal\":true}"},
+      "saida": [
+        "HTTP 201 com tipo CELULAR, telefone 11987654321, principal = true ({idContato})",
+        "GET /api/responsavel/{idCarlos}: lista contatos contém o telefone 11987654321"
+      ],
+      "passos": [
+        ["Enviar o POST com o Body de entrada", "HTTP 201; anotar {idContato}"],
+        ["Enviar GET /api/responsavel/{idCarlos}", "Contato 11987654321 presente em contatos"]
+      ]
+    },
+    {
+      "id": "CT20",
+      "titulo": "API .NET - Criação de lembrete protegida por Service Token",
+      "modulo": "API Vitalis (.NET) - Lembretes",
+      "prioridade": 1,
+      "objetivo": "Validar que só o backend Java (com X-Service-Token) cria lembretes, e que o lembrete nasce PENDENTE.",
+      "precondicoes": "CT15 executado; {idRex} conhecido (SELECT ID FROM TB_PET WHERE NOME = 'Rex'); ServiceToken = pethub-internal-secret-2025 (appsettings.json).",
+      "entrada": {"Método/URL": "POST /api/lembretes", "Body": "{\"responsavelId\":{idCarlos},\"petId\":{idRex},\"tipo\":0,\"dataAgendada\":\"2026-12-20\",\"mensagem\":\"Vacina V10 - reforço anual\"}", "Header (tentativa 2)": "X-Service-Token: pethub-internal-secret-2025"},
+      "saida": [
+        "Sem header: HTTP 401 {\"erro\":\"Token inválido\"}",
+        "Com header: HTTP 201 {\"id\": <n>} ({idLembrete})",
+        "GET /api/lembretes/{idLembrete}: tipo 0 (VACINA), status 0 (PENDENTE), dataAgendada 2026-12-20"
+      ],
+      "passos": [
+        ["Enviar o POST sem o header X-Service-Token", "HTTP 401 Token inválido"],
+        ["Enviar o mesmo POST com o header X-Service-Token", "HTTP 201; anotar {idLembrete}"],
+        ["Enviar GET /api/lembretes/{idLembrete}", "tipo 0, status 0, dataAgendada 2026-12-20"]
+      ]
+    },
+    {
+      "id": "CT21",
+      "titulo": "API .NET - Atualização de status do lembrete",
+      "modulo": "API Vitalis (.NET) - Lembretes",
+      "prioridade": 2,
+      "objetivo": "Validar a baixa do lembrete após o envio (fluxo do disparo por WhatsApp) e o filtro por tipo.",
+      "precondicoes": "CT20 executado.",
+      "entrada": {"Método/URL": "PATCH /api/lembretes/{idLembrete}/status", "Body": "{\"status\":1}"},
+      "saida": [
+        "HTTP 204 No Content",
+        "GET /api/lembretes/responsavel/{idCarlos}/tipo/VACINA: lembrete com status 1 (ENVIADO)",
+        "PATCH /api/lembretes/999999/status: HTTP 404 {\"erro\":\"Lembrete não encontrado\"}"
+      ],
+      "passos": [
+        ["Enviar o PATCH com o Body de entrada", "HTTP 204"],
+        ["Enviar GET /api/lembretes/responsavel/{idCarlos}/tipo/VACINA", "Lembrete V10 com status 1"],
+        ["Enviar PATCH /api/lembretes/999999/status com o mesmo Body", "HTTP 404 Lembrete não encontrado"]
+      ]
+    },
+    {
+      "id": "CT22",
+      "titulo": "API .NET - Busca de responsável por CPF (integração Java)",
+      "modulo": "API Vitalis (.NET) - Integração",
+      "prioridade": 1,
+      "objetivo": "Validar o endpoint que o backend Java usa para vincular o pet ao tutor pelo CPF.",
+      "precondicoes": "CT15 executado.",
+      "entrada": {"Método/URL": "GET /api/responsavel/buscar?cpf=52998224725", "Header": "X-Service-Token: pethub-internal-secret-2025"},
+      "saida": [
+        "Com header: HTTP 200 {\"id\": {idCarlos}, \"nome\": \"Carlos Teste\", \"cpf\": \"52998224725\", \"email\": \"carlos.teste@pethub.com\", \"ativo\": true}",
+        "Sem header: HTTP 401 {\"erro\":\"Token inválido\"}",
+        "Com header e cpf=00000000000: HTTP 404 {\"erro\":\"Responsavel não encontrado\"}"
+      ],
+      "passos": [
+        ["Enviar o GET com o header", "HTTP 200 com os dados do Carlos"],
+        ["Enviar o GET sem o header", "HTTP 401"],
+        ["Enviar o GET com header e cpf=00000000000", "HTTP 404"]
+      ]
+    },
+    {
+      "id": "CT23",
+      "titulo": "Monitoramento - Health check da API .NET",
+      "modulo": "API Vitalis (.NET) - Observabilidade",
+      "prioridade": 2,
+      "objetivo": "Validar que o /health reflete o estado do banco Oracle e do backend Java.",
+      "precondicoes": "API Vitalis e pethub-java rodando, Oracle acessível.",
+      "entrada": {"Método/URL": "GET http://localhost:5192/health", "Cenário B": "pethub-java parado"},
+      "saida": [
+        "Cenário A: HTTP 200, status Healthy; verificacoes banco_dados e servico_externo Healthy com LatenciaMs",
+        "Cenário B: HTTP 503, status Unhealthy; servico_externo Unhealthy com o campo erro preenchido"
+      ],
+      "passos": [
+        ["Com tudo rodando, enviar GET /health", "HTTP 200 Healthy, duas verificações Healthy"],
+        ["Parar o pethub-java e enviar GET /health de novo", "HTTP 503 Unhealthy; servico_externo Unhealthy"],
+        ["Subir o pethub-java de novo e repetir", "HTTP 200 Healthy"]
+      ]
+    },
+    {
+      "id": "CT24",
+      "titulo": "API Java - Leitura do wearable de hidratação (IoT)",
+      "modulo": "API pethub-java - Wearable IoT",
+      "prioridade": 2,
+      "objetivo": "Validar o recebimento de leituras de consumo de água e as regras de acesso por perfil.",
+      "precondicoes": "Seed carregado; {idMimi} conhecido (SELECT ID FROM TB_PET WHERE NOME = 'Mimi').",
+      "entrada": {"Login vet": "POST /api/auth/login {\"email\":\"vet_video@pethub.com\",\"senha\":\"123456\"}", "Login tutor": "POST /api/auth/login {\"email\":\"maria_video@demo.com\",\"senha\":\"123456\"}", "Body da leitura": "{\"petId\":{idMimi},\"timestamp\":\"2026-10-29T10:00:00\",\"consumoMlRegistrado\":35.0,\"metaDiariaML\":240.0}"},
+      "saida": [
+        "POST /api/leituras-wearable sem token: HTTP 401",
+        "Com token do tutor: HTTP 403 (tutor só lê)",
+        "Com token do vet: HTTP 201 com petId {idMimi}, consumoMlRegistrado 35.0 e metaDiariaML 240.0",
+        "GET /api/leituras-wearable com token da Maria: a leitura da Mimi aparece"
+      ],
+      "passos": [
+        ["Fazer os dois logins e guardar os tokens", "HTTP 200 com token, perfil VETERINARIO e RESPONSAVEL"],
+        ["Enviar o POST da leitura sem Authorization", "HTTP 401"],
+        ["Enviar com Authorization: Bearer {tokenTutor}", "HTTP 403"],
+        ["Enviar com Authorization: Bearer {tokenVet}", "HTTP 201 com os valores enviados"],
+        ["GET /api/leituras-wearable com o token da Maria", "Leitura de 35.0 ml da Mimi listada"]
+      ]
+    }
+  ]
+}

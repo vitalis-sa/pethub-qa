@@ -1,0 +1,913 @@
+{
+  "id": "ed623f92-7252-4e90-9fc0-640eafe84ec7",
+  "version": "2.0",
+  "name": "PetHub - Testes Automatizados",
+  "url": "http://localhost:8080",
+  "tests": [
+    {
+      "id": "c6dc64fd-fc71-4de6-aa99-03034970655d",
+      "name": "AT01 - Login valido de tutor (CT03)",
+      "commands": [
+        {
+          "id": "4a18d0dd-f3ab-42b2-826e-cce0c32d56fc",
+          "comment": "Abre a tela de login",
+          "command": "open",
+          "target": "/login",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "7ff37826-a1dd-4f1a-956d-2691fc9caf5c",
+          "comment": "",
+          "command": "setWindowSize",
+          "target": "1280x800",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "a7b92eaa-fd62-44c1-9d00-d8c1f6471fa4",
+          "comment": "",
+          "command": "type",
+          "target": "id=username",
+          "targets": [],
+          "value": "joao_video@demo.com"
+        },
+        {
+          "id": "5cdb5093-e66a-4895-b580-024a252b6a83",
+          "comment": "",
+          "command": "type",
+          "target": "id=password",
+          "targets": [],
+          "value": "123456"
+        },
+        {
+          "id": "73a0d16e-73c2-4352-b159-f25529bd5391",
+          "comment": "Entrar",
+          "command": "click",
+          "target": "css=button[type=submit]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "7887fea2-1dba-48a3-b1ac-3da00f455e2c",
+          "comment": "",
+          "command": "waitForElementVisible",
+          "target": "css=h2",
+          "targets": [],
+          "value": "5000"
+        },
+        {
+          "id": "4c4cb094-fc1c-46f2-899c-d1068a0af5cd",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return window.location.pathname",
+          "targets": [],
+          "value": "caminho"
+        },
+        {
+          "id": "2fc7344f-2a4f-4bfb-9a53-66c0b572673e",
+          "comment": "URL deve ser /tutor/dashboard",
+          "command": "assert",
+          "target": "caminho",
+          "targets": [],
+          "value": "/tutor/dashboard"
+        },
+        {
+          "id": "47aa3fb1-8a52-47e7-be56-02ab836eb7d9",
+          "comment": "",
+          "command": "assertText",
+          "target": "css=h2",
+          "targets": [],
+          "value": "Bem-vindo(a), João (Tutor A)!"
+        },
+        {
+          "id": "21e6666f-ff50-4578-94f6-16148db99258",
+          "comment": "Pet do João aparece",
+          "command": "assertElementPresent",
+          "target": "linkText=Rex",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "90537201-ea45-45c7-a1ab-0b6431ab5a8e",
+          "comment": "Pet da Maria não aparece",
+          "command": "assertElementNotPresent",
+          "target": "linkText=Mimi",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "26b2a8bf-256f-4857-b341-6abc2557afcd",
+          "comment": "Sair",
+          "command": "click",
+          "target": "css=form[action='/logout'] button",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "9f975f3f-876a-42bb-87f2-87f4e474a2ea",
+          "comment": "",
+          "command": "assertText",
+          "target": "css=.aviso--sucesso",
+          "targets": [],
+          "value": "Você saiu do sistema com sucesso."
+        }
+      ]
+    },
+    {
+      "id": "ffd8c07b-8994-499e-a5c7-d772f015cd38",
+      "name": "AT02 - Login com senha incorreta (CT04)",
+      "commands": [
+        {
+          "id": "3d9f454e-3e63-48c2-b983-00c33fefed65",
+          "comment": "Abre a tela de login",
+          "command": "open",
+          "target": "/login",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "7033ba8c-ea2d-43a6-ac6a-909eeee50955",
+          "comment": "",
+          "command": "setWindowSize",
+          "target": "1280x800",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "c6fed574-b7c8-4296-88fe-e6a5959bf5c0",
+          "comment": "",
+          "command": "type",
+          "target": "id=username",
+          "targets": [],
+          "value": "joao_video@demo.com"
+        },
+        {
+          "id": "0a38979b-e517-4b9a-9c61-d5b311664ad0",
+          "comment": "",
+          "command": "type",
+          "target": "id=password",
+          "targets": [],
+          "value": "senhaErrada1"
+        },
+        {
+          "id": "d4ecc06b-bca9-4ba1-bb70-84dae2b08012",
+          "comment": "Entrar",
+          "command": "click",
+          "target": "css=button[type=submit]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "d7491ce8-f933-4ddf-acbf-3512f283c698",
+          "comment": "",
+          "command": "waitForElementVisible",
+          "target": "css=.aviso--erro",
+          "targets": [],
+          "value": "5000"
+        },
+        {
+          "id": "b5c7e1ec-0181-48d6-831b-109972fcb467",
+          "comment": "",
+          "command": "assertText",
+          "target": "css=.aviso--erro",
+          "targets": [],
+          "value": "E-mail ou senha inválidos."
+        },
+        {
+          "id": "de317739-5472-4035-a993-4cf9a5fe0984",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return window.location.search",
+          "targets": [],
+          "value": "busca"
+        },
+        {
+          "id": "9bc76143-0d9c-47e7-a2c8-118be6e7f812",
+          "comment": "",
+          "command": "assert",
+          "target": "busca",
+          "targets": [],
+          "value": "?error"
+        },
+        {
+          "id": "25b50ae9-d051-4ced-9c9c-e55548a6fb40",
+          "comment": "Sem sessão, deve voltar ao login",
+          "command": "open",
+          "target": "/tutor/dashboard",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "f19a4a63-08b0-4e47-baa6-55372a5353c8",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return window.location.pathname",
+          "targets": [],
+          "value": "caminho"
+        },
+        {
+          "id": "89a028c3-d6c4-43a5-9e55-1be2af1598fa",
+          "comment": "URL deve ser /login",
+          "command": "assert",
+          "target": "caminho",
+          "targets": [],
+          "value": "/login"
+        }
+      ]
+    },
+    {
+      "id": "b80e9255-24b1-4be0-9646-c9e582ebd5a6",
+      "name": "AT03 - Cadastro de tutor e primeiro acesso (CT01)",
+      "commands": [
+        {
+          "id": "5148c644-db6c-4009-9c41-79ff6d57581f",
+          "comment": "E-mail único por execução",
+          "command": "executeScript",
+          "target": "return 'auto' + Date.now() + '@pethub.com'",
+          "targets": [],
+          "value": "email"
+        },
+        {
+          "id": "024c2511-b688-453a-8b1c-da0ed87a37b6",
+          "comment": "CPF válido e único por execução",
+          "command": "executeScript",
+          "target": "var n=[];for(var i=0;i<9;i++){n.push(Math.floor(Math.random()*10));}for(var k=9;k<11;k++){var s=0;for(var j=0;j<k;j++){s+=n[j]*(k+1-j);}n.push((s*10)%11%10);}return n.join('');",
+          "targets": [],
+          "value": "cpf"
+        },
+        {
+          "id": "ace0ecae-f846-4e92-a2f0-9efb3ecde231",
+          "comment": "",
+          "command": "open",
+          "target": "/registrar/tutor",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "ea34e1ef-5ad9-42ce-a73c-69c0d802f84c",
+          "comment": "",
+          "command": "setWindowSize",
+          "target": "1280x800",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "e08dafc3-2393-4ceb-bf43-829fac83cd42",
+          "comment": "",
+          "command": "type",
+          "target": "id=nome",
+          "targets": [],
+          "value": "Automacao Teste"
+        },
+        {
+          "id": "6c5b8ce6-71ab-4522-a850-2ec611c50593",
+          "comment": "",
+          "command": "type",
+          "target": "id=cpf",
+          "targets": [],
+          "value": "${cpf}"
+        },
+        {
+          "id": "9af108b4-9cd0-41f3-b953-adf7ec749f24",
+          "comment": "",
+          "command": "type",
+          "target": "id=email",
+          "targets": [],
+          "value": "${email}"
+        },
+        {
+          "id": "60954684-9b80-4e39-b9b3-ad3c51e88039",
+          "comment": "",
+          "command": "type",
+          "target": "id=senha",
+          "targets": [],
+          "value": "Teste@123"
+        },
+        {
+          "id": "8087cb28-c867-46b2-88c6-4f5529e37151",
+          "comment": "Cadastrar",
+          "command": "click",
+          "target": "css=button[type=submit]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "00675244-aa56-4062-9366-67fb5e3e4629",
+          "comment": "",
+          "command": "waitForElementVisible",
+          "target": "css=.aviso--sucesso",
+          "targets": [],
+          "value": "5000"
+        },
+        {
+          "id": "ecd4ae85-c052-4cc0-9396-87c971ebc3da",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return document.querySelector('.aviso--sucesso').innerText.indexOf('Cadastro realizado') >= 0",
+          "targets": [],
+          "value": "cadastrou"
+        },
+        {
+          "id": "7ebaab09-f161-40da-a044-1abaec02b414",
+          "comment": "",
+          "command": "assert",
+          "target": "cadastrou",
+          "targets": [],
+          "value": "true"
+        },
+        {
+          "id": "3c839e43-4424-4cbb-8c85-f5bcaf1e3cf3",
+          "comment": "",
+          "command": "type",
+          "target": "id=username",
+          "targets": [],
+          "value": "${email}"
+        },
+        {
+          "id": "22fbab8d-a881-47de-b3e3-4ad4d7f47a56",
+          "comment": "",
+          "command": "type",
+          "target": "id=password",
+          "targets": [],
+          "value": "Teste@123"
+        },
+        {
+          "id": "ff6adb87-c502-4eaf-af40-9c042f40c804",
+          "comment": "Entrar com a conta nova",
+          "command": "click",
+          "target": "css=button[type=submit]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "6c077701-0ce0-4edb-a793-22fc75a71ff3",
+          "comment": "",
+          "command": "waitForElementVisible",
+          "target": "css=h2",
+          "targets": [],
+          "value": "5000"
+        },
+        {
+          "id": "5cf6748c-5438-4ec4-b341-1701f2fcc82e",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return window.location.pathname",
+          "targets": [],
+          "value": "caminho"
+        },
+        {
+          "id": "c5a1224a-58fc-4ad9-b3d6-136e9a3b4f1d",
+          "comment": "URL deve ser /tutor/dashboard",
+          "command": "assert",
+          "target": "caminho",
+          "targets": [],
+          "value": "/tutor/dashboard"
+        },
+        {
+          "id": "75e3d596-8d56-4e4d-87cf-77b06b83f6ab",
+          "comment": "",
+          "command": "assertText",
+          "target": "css=h2",
+          "targets": [],
+          "value": "Bem-vindo(a), Automacao Teste!"
+        },
+        {
+          "id": "702b9662-149c-4cfb-83be-5df997a6222d",
+          "comment": "Sair",
+          "command": "click",
+          "target": "css=form[action='/logout'] button",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "818b4bcf-b710-4183-b23f-570b58ad0f41",
+          "comment": "",
+          "command": "assertText",
+          "target": "css=.aviso--sucesso",
+          "targets": [],
+          "value": "Você saiu do sistema com sucesso."
+        }
+      ]
+    },
+    {
+      "id": "d738cc9c-992c-41cc-a71f-fc8ce47f7ee1",
+      "name": "AT04 - Cadastro de pet pelo tutor (CT05)",
+      "commands": [
+        {
+          "id": "8ece864c-e0e3-4fd5-9ecf-24ad12a8659e",
+          "comment": "Abre a tela de login",
+          "command": "open",
+          "target": "/login",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "1157e546-0330-4db3-881e-b36463b0c9da",
+          "comment": "",
+          "command": "setWindowSize",
+          "target": "1280x800",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "726d33a1-061a-42e7-bb2a-9a31aa11a465",
+          "comment": "",
+          "command": "type",
+          "target": "id=username",
+          "targets": [],
+          "value": "joao_video@demo.com"
+        },
+        {
+          "id": "6ae36731-61e0-48cc-9190-fad9b8d58b67",
+          "comment": "",
+          "command": "type",
+          "target": "id=password",
+          "targets": [],
+          "value": "123456"
+        },
+        {
+          "id": "c4961f7b-e63b-4047-9a5f-0f05d7a4372f",
+          "comment": "Entrar",
+          "command": "click",
+          "target": "css=button[type=submit]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "3344667d-5d61-4058-a2d3-30b610b785fc",
+          "comment": "",
+          "command": "waitForElementVisible",
+          "target": "linkText=Cadastrar novo pet",
+          "targets": [],
+          "value": "5000"
+        },
+        {
+          "id": "39c56c28-df2d-4e9a-bb43-563a3828a610",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Cadastrar novo pet",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "a56d8d4e-b7cc-4d47-9475-110de738b398",
+          "comment": "",
+          "command": "type",
+          "target": "id=nome",
+          "targets": [],
+          "value": "Thor"
+        },
+        {
+          "id": "00292984-82a3-482d-bea8-06bc7d6fd8ed",
+          "comment": "",
+          "command": "type",
+          "target": "id=especie",
+          "targets": [],
+          "value": "Cachorro"
+        },
+        {
+          "id": "bccd0022-f38f-4f54-8fb8-d44c8b7bdc46",
+          "comment": "",
+          "command": "type",
+          "target": "id=raca",
+          "targets": [],
+          "value": "Beagle"
+        },
+        {
+          "id": "a74bef79-b548-42b2-937f-ebf9b710bc5e",
+          "comment": "",
+          "command": "type",
+          "target": "id=idade",
+          "targets": [],
+          "value": "4"
+        },
+        {
+          "id": "16f04911-43b7-4992-88bc-aef5289c5f3e",
+          "comment": "",
+          "command": "type",
+          "target": "id=peso",
+          "targets": [],
+          "value": "12.5"
+        },
+        {
+          "id": "5960f202-97d9-44a6-9c3f-fb1de5c5421a",
+          "comment": "",
+          "command": "type",
+          "target": "id=genero",
+          "targets": [],
+          "value": "Macho"
+        },
+        {
+          "id": "9925ebf6-bc48-4b5d-9542-9907d603efab",
+          "comment": "Salvar pet",
+          "command": "click",
+          "target": "css=button[type=submit]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "57191ffc-a668-4006-bf4d-37204fefe60a",
+          "comment": "",
+          "command": "waitForElementVisible",
+          "target": "linkText=Thor",
+          "targets": [],
+          "value": "5000"
+        },
+        {
+          "id": "8cf1a3fa-c90b-4c0b-9936-e159d73c0b6c",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return window.location.pathname",
+          "targets": [],
+          "value": "caminho"
+        },
+        {
+          "id": "ea01896e-94d8-4e39-af79-3f527b80888a",
+          "comment": "URL deve ser /tutor/dashboard",
+          "command": "assert",
+          "target": "caminho",
+          "targets": [],
+          "value": "/tutor/dashboard"
+        },
+        {
+          "id": "64e2a1a7-b8ea-45ea-8401-0fd323cd5968",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "linkText=Thor",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "ccc3d591-6fe2-4026-974e-f32ee26cf90a",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "linkText=Rex",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "10dd8436-ecec-49d4-b98a-b9ce36186a0b",
+          "comment": "Sair",
+          "command": "click",
+          "target": "css=form[action='/logout'] button",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "9c47eec1-2e31-4c90-871f-f2100bda5084",
+          "comment": "",
+          "command": "assertText",
+          "target": "css=.aviso--sucesso",
+          "targets": [],
+          "value": "Você saiu do sistema com sucesso."
+        }
+      ]
+    },
+    {
+      "id": "5017deab-2754-42b7-b593-16ad2b7b02c9",
+      "name": "AT05 - Tutor bloqueado na area do veterinario (CT07)",
+      "commands": [
+        {
+          "id": "72b623b4-d0b5-465a-b75f-014b0a5bbe8c",
+          "comment": "Abre a tela de login",
+          "command": "open",
+          "target": "/login",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "e7902107-519c-4368-84dc-9453d8c25ee9",
+          "comment": "",
+          "command": "setWindowSize",
+          "target": "1280x800",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "d792a77e-5df1-4e5a-bf39-ee860fd70a04",
+          "comment": "",
+          "command": "type",
+          "target": "id=username",
+          "targets": [],
+          "value": "joao_video@demo.com"
+        },
+        {
+          "id": "81df5263-fb0b-4d43-8bba-2cd2d54aae0a",
+          "comment": "",
+          "command": "type",
+          "target": "id=password",
+          "targets": [],
+          "value": "123456"
+        },
+        {
+          "id": "ef957d51-6017-4678-875d-2632cb841114",
+          "comment": "Entrar",
+          "command": "click",
+          "target": "css=button[type=submit]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "e89b5a29-e2d1-4a8f-9064-4d9efb29b3dd",
+          "comment": "",
+          "command": "waitForElementVisible",
+          "target": "css=h2",
+          "targets": [],
+          "value": "5000"
+        },
+        {
+          "id": "f2c41547-d68f-4b9d-8a1a-3fe75b6ef65e",
+          "comment": "Tenta abrir a agenda do veterinário",
+          "command": "open",
+          "target": "/vet/dashboard",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "5193814a-b29c-40d9-a9eb-dd9bc41d7554",
+          "comment": "",
+          "command": "assertText",
+          "target": "css=.erro-codigo",
+          "targets": [],
+          "value": "403"
+        },
+        {
+          "id": "2c47e1a9-78af-480b-b0de-b5bf98f23c10",
+          "comment": "",
+          "command": "assertText",
+          "target": "css=h2",
+          "targets": [],
+          "value": "Esta área não é do seu perfil"
+        },
+        {
+          "id": "0846eeb5-5a9a-4f3f-8035-5ad995830300",
+          "comment": "",
+          "command": "open",
+          "target": "/tutor/dashboard",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "cac22af7-6808-4ab5-8d8a-16470b40abfa",
+          "comment": "Sair",
+          "command": "click",
+          "target": "css=form[action='/logout'] button",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "bc2ac00a-345c-4ae5-ae96-305061861512",
+          "comment": "",
+          "command": "assertText",
+          "target": "css=.aviso--sucesso",
+          "targets": [],
+          "value": "Você saiu do sistema com sucesso."
+        }
+      ]
+    },
+    {
+      "id": "8ff324b8-c1b4-4245-8348-3b6716d37b58",
+      "name": "AT06 - Conflito de agenda do veterinario (CT08 + CT09)",
+      "commands": [
+        {
+          "id": "0d6a07bf-d560-43f3-9f5b-9832ca588b25",
+          "comment": "Horário futuro aleatório, livre",
+          "command": "executeScript",
+          "target": "var d=new Date(Date.now()+(60+Math.floor(Math.random()*600))*86400000);var p=function(x){return (x<10?'0':'')+x;};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(8+Math.floor(Math.random()*10))+':'+p(Math.floor(Math.random()*12)*5);",
+          "targets": [],
+          "value": "horario"
+        },
+        {
+          "id": "1fda1e8f-dd3a-4276-9a80-17014dd0c5b0",
+          "comment": "Abre a tela de login",
+          "command": "open",
+          "target": "/login",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "a66d5a3e-0313-48ba-91ca-8dee907a99db",
+          "comment": "",
+          "command": "setWindowSize",
+          "target": "1280x800",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "f8761f46-62ff-4b65-b2c1-afc615647a87",
+          "comment": "",
+          "command": "type",
+          "target": "id=username",
+          "targets": [],
+          "value": "vet_video@pethub.com"
+        },
+        {
+          "id": "7ab3a761-32d8-4fe3-9205-149a16779c95",
+          "comment": "",
+          "command": "type",
+          "target": "id=password",
+          "targets": [],
+          "value": "123456"
+        },
+        {
+          "id": "fc816195-395d-43ac-8705-16063d9b8371",
+          "comment": "Entrar",
+          "command": "click",
+          "target": "css=button[type=submit]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "537bab17-49c1-4785-8237-907bad619573",
+          "comment": "",
+          "command": "waitForElementVisible",
+          "target": "linkText=Agendar nova consulta",
+          "targets": [],
+          "value": "5000"
+        },
+        {
+          "id": "428c9339-5afa-4e89-946a-2a6a1ff1b867",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Agendar nova consulta",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "3f3d25f3-2f36-42b7-a17c-3ae08f4ded8b",
+          "comment": "",
+          "command": "select",
+          "target": "id=petId",
+          "targets": [],
+          "value": "label=Rex (Cachorro)"
+        },
+        {
+          "id": "2c4eb085-c168-4c98-ba46-a44b1e5ed381",
+          "comment": "",
+          "command": "executeScript",
+          "target": "document.getElementById('dataHora').value = '${horario}'",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "cb150a64-3651-4020-9b3b-2da075538d93",
+          "comment": "",
+          "command": "select",
+          "target": "id=tipo",
+          "targets": [],
+          "value": "label=PRESENCIAL"
+        },
+        {
+          "id": "6d4b67f7-506e-4e9b-aa82-a9cb2717ee5c",
+          "comment": "",
+          "command": "type",
+          "target": "id=motivo",
+          "targets": [],
+          "value": "Check-up pre-viagem"
+        },
+        {
+          "id": "0f12143d-723d-4664-a6d7-a33849d16cdc",
+          "comment": "1º agendamento: deve passar",
+          "command": "click",
+          "target": "css=button[type=submit]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "e07f5ae2-d903-4cee-87c0-bcaaaf2f7555",
+          "comment": "",
+          "command": "waitForElementVisible",
+          "target": "linkText=Agendar nova consulta",
+          "targets": [],
+          "value": "5000"
+        },
+        {
+          "id": "c75fa77e-800b-4063-ae12-367b2935b7bb",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return window.location.pathname",
+          "targets": [],
+          "value": "caminho"
+        },
+        {
+          "id": "f612dafe-c14d-4d9a-b935-1e6f5d355911",
+          "comment": "URL deve ser /vet/dashboard",
+          "command": "assert",
+          "target": "caminho",
+          "targets": [],
+          "value": "/vet/dashboard"
+        },
+        {
+          "id": "a7ed00a9-3c36-4039-927a-f02e3046a27b",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Agendar nova consulta",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "b1196139-aee1-457f-82b1-450b9f5277df",
+          "comment": "",
+          "command": "select",
+          "target": "id=petId",
+          "targets": [],
+          "value": "label=Mimi (Gato)"
+        },
+        {
+          "id": "9aa5b125-3ddb-46d0-8e84-f675238b2d36",
+          "comment": "",
+          "command": "executeScript",
+          "target": "document.getElementById('dataHora').value = '${horario}'",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "223914a3-08cf-4ea8-bdbc-ba6ca16e3585",
+          "comment": "",
+          "command": "select",
+          "target": "id=tipo",
+          "targets": [],
+          "value": "label=PRESENCIAL"
+        },
+        {
+          "id": "cd0fae51-ca6e-487c-97c2-9f5b7e3b4452",
+          "comment": "",
+          "command": "type",
+          "target": "id=motivo",
+          "targets": [],
+          "value": "Vacinacao"
+        },
+        {
+          "id": "6eb0a314-2c8a-4809-916b-49ae9f1525f5",
+          "comment": "2º agendamento no mesmo horário: deve ser recusado",
+          "command": "click",
+          "target": "css=button[type=submit]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "1035b33d-031c-44ce-a674-8719955301a0",
+          "comment": "",
+          "command": "waitForElementVisible",
+          "target": "css=.error",
+          "targets": [],
+          "value": "5000"
+        },
+        {
+          "id": "c4965ccb-930a-4e22-8a57-d1b1281485bf",
+          "comment": "",
+          "command": "assertText",
+          "target": "css=.error",
+          "targets": [],
+          "value": "Este veterinário já tem uma consulta marcada neste horário."
+        },
+        {
+          "id": "bba87913-6d03-4389-8799-150e1ecda314",
+          "comment": "",
+          "command": "open",
+          "target": "/vet/dashboard",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "1e918730-03ef-49c4-bad0-d4d87d7e5573",
+          "comment": "Sair",
+          "command": "click",
+          "target": "css=form[action='/logout'] button",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "bf39cd61-428d-4d8a-a857-210d18658d29",
+          "comment": "",
+          "command": "assertText",
+          "target": "css=.aviso--sucesso",
+          "targets": [],
+          "value": "Você saiu do sistema com sucesso."
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "df45b1df-5968-47d8-871c-ea8628f67b5a",
+      "name": "Suite PetHub Web",
+      "persistSession": false,
+      "parallel": false,
+      "timeout": 300,
+      "tests": [
+        "c6dc64fd-fc71-4de6-aa99-03034970655d",
+        "ffd8c07b-8994-499e-a5c7-d772f015cd38",
+        "b80e9255-24b1-4be0-9646-c9e582ebd5a6",
+        "d738cc9c-992c-41cc-a71f-fc8ce47f7ee1",
+        "5017deab-2754-42b7-b593-16ad2b7b02c9",
+        "8ff324b8-c1b4-4245-8348-3b6716d37b58"
+      ]
+    }
+  ],
+  "urls": [
+    "http://localhost:8080/"
+  ],
+  "plugins": []
+}
