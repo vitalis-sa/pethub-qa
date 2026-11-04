@@ -1,0 +1,818 @@
+{
+  "info": {
+    "name": "PetHub - Automação de Testes (Sprint 4)",
+    "description": "Testes de integração das APIs do PetHub: Vitalis (.NET, responsável) e pethub-java (clínico). Cada caso AT corresponde a um Test Case do plano manual no Azure DevOps. Rode pelo Collection Runner, na ordem.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "dotnetUrl",
+      "value": "https://pethub-dotnet.cloud.run"
+    },
+    {
+      "key": "javaUrl",
+      "value": "https://pethub-java.cloud.run"
+    },
+    {
+      "key": "senha",
+      "value": "Teste@123"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 - Preparação (veterinário e unidade)",
+      "item": [
+        {
+          "name": "Registrar veterinário de teste",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": "{{javaUrl}}/api/auth/registrar/veterinario",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Dra. Qa Automacao\",\n  \"crmv\": \"{{crmv}}\",\n  \"especialidade\": \"Clínica geral\",\n  \"email\": \"{{emailVet}}\",\n  \"senha\": \"{{senha}}\",\n  \"ativo\": true\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const s = Date.now().toString();",
+                  "pm.collectionVariables.set(\"sufixo\", s);",
+                  "pm.collectionVariables.set(\"emailVet\", \"vet.qa.\" + s + \"@pethub.teste\");",
+                  "pm.collectionVariables.set(\"crmv\", \"SP-\" + s.slice(-6));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Veterinário criado (201)\", () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const c = pm.response.json();",
+                  "pm.collectionVariables.set(\"tokenVet\", c.token);",
+                  "pm.collectionVariables.set(\"vetId\", c.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Criar unidade veterinária",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenVet}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{javaUrl}}/api/unidades",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"veterinarioId\": {{vetId}},\n  \"nome\": \"PetHub QA Paulista\",\n  \"logradouro\": \"Av. Paulista\",\n  \"numero\": \"1106\",\n  \"bairro\": \"Bela Vista\",\n  \"cidade\": \"São Paulo\",\n  \"estado\": \"SP\",\n  \"cep\": \"01311000\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Unidade criada (201)\", () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "pm.collectionVariables.set(\"unidadeId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AT01 - Cadastro do responsável",
+      "item": [
+        {
+          "name": "Cadastrar responsável",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": "{{dotnetUrl}}/api/responsavel/cadastro",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Ana Qa Automacao\",\n  \"cpf\": \"{{cpf}}\",\n  \"email\": \"{{emailResp}}\",\n  \"senha\": \"{{senha}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// CPF válido gerado a cada execução, para a coleção rodar várias vezes sem limpar o banco",
+                  "const n = Array.from({ length: 9 }, () => Math.floor(Math.random() * 10));",
+                  "const dv = (arr) => { const r = arr.reduce((s, d, i) => s + d * (arr.length + 1 - i), 0) % 11; return r < 2 ? 0 : 11 - r; };",
+                  "n.push(dv(n)); n.push(dv(n));",
+                  "const s = Date.now().toString();",
+                  "pm.collectionVariables.set(\"cpf\", n.join(\"\"));",
+                  "pm.collectionVariables.set(\"emailResp\", \"resp.qa.\" + s + \"@pethub.teste\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201 Created\", () => pm.response.to.have.status(201));",
+                  "const c = pm.response.json();",
+                  "pm.test(\"Devolve id, nome, e-mail e token\", () => {",
+                  "  pm.expect(c.id).to.be.a(\"number\");",
+                  "  pm.expect(c.nome).to.eql(\"Ana Qa Automacao\");",
+                  "  pm.expect(c.email).to.eql(pm.collectionVariables.get(\"emailResp\"));",
+                  "  pm.expect(c.token.split(\".\")).to.have.lengthOf(3);",
+                  "});",
+                  "pm.test(\"Senha nunca volta na resposta\", () => pm.expect(pm.response.text()).to.not.include(pm.collectionVariables.get(\"senha\")));",
+                  "pm.test(\"Responde em menos de 5 s\", () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+                  "pm.collectionVariables.set(\"responsavelId\", c.id);",
+                  "pm.collectionVariables.set(\"tokenResp\", c.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cadastrar o mesmo e-mail de novo (conflito)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": "{{dotnetUrl}}/api/responsavel/cadastro",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Ana Duplicada\",\n  \"cpf\": \"11144477735\",\n  \"email\": \"{{emailResp}}\",\n  \"senha\": \"{{senha}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"E-mail duplicado é recusado com 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Resposta não traz token\", () => pm.expect(pm.response.text()).to.not.include(\"token\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AT02 - Login válido do responsável (Azure 170)",
+      "item": [
+        {
+          "name": "Login com e-mail e senha corretos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": "{{dotnetUrl}}/api/responsavel/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailResp}}\",\n  \"senha\": \"{{senha}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200 OK\", () => pm.response.to.have.status(200));",
+                  "const c = pm.response.json();",
+                  "pm.test(\"Token JWT no formato cabeçalho.corpo.assinatura\", () => pm.expect(c.token.split(\".\")).to.have.lengthOf(3));",
+                  "pm.test(\"Sessão é do responsável cadastrado\", () => pm.expect(c.id).to.eql(Number(pm.collectionVariables.get(\"responsavelId\"))));",
+                  "pm.test(\"Responde em menos de 5 s\", () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+                  "pm.collectionVariables.set(\"tokenResp\", c.token);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AT03 - Login com senha incorreta (Azure 174)",
+      "item": [
+        {
+          "name": "Login com senha errada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": "{{dotnetUrl}}/api/responsavel/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailResp}}\",\n  \"senha\": \"SenhaErrada1\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401 Unauthorized\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Nenhum token é emitido\", () => pm.expect(pm.response.text()).to.not.include(\"token\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Rota protegida sem token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": "{{dotnetUrl}}/api/responsavel/{{responsavelId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Sem token a API devolve 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AT04 - Tutor vê só os próprios pets (Azure 170)",
+      "item": [
+        {
+          "name": "Veterinário cadastra o pet Thor para o CPF do responsável",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenVet}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{javaUrl}}/api/pets",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Thor\",\n  \"especie\": \"Cachorro\",\n  \"raca\": \"Beagle\",\n  \"dataNascimento\": \"2022-05-10\",\n  \"peso\": 12.5,\n  \"genero\": \"Macho\",\n  \"responsavelCpf\": \"{{cpf}}\",\n  \"veterinarioResponsavelId\": {{vetId}}\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Pet criado (201)\", () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "pm.collectionVariables.set(\"petId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Responsável lista os pets pelo gateway do .NET",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenResp}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{dotnetUrl}}/api/clinico/pets"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200 OK\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "const pets = Array.isArray(corpo) ? corpo : (corpo.content || corpo.itens || []);",
+                  "pm.test(\"Lista tem exatamente 1 pet, o Thor\", () => {",
+                  "  pm.expect(pets).to.have.lengthOf(1);",
+                  "  pm.expect(pets[0].nome).to.eql(\"Thor\");",
+                  "});",
+                  "pm.test(\"Responde em menos de 5 s\", () => pm.expect(pm.response.responseTime).to.be.below(5000));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Responsável pede um pet que não é dele",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenResp}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{dotnetUrl}}/api/clinico/pets/999999999"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Pet de outro tutor devolve 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AT05 - Agendamento e conflito de horário (Azure 246)",
+      "item": [
+        {
+          "name": "Responsável agenda consulta em horário livre",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenResp}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{dotnetUrl}}/api/clinico/consultas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataHora\": \"{{dataConsulta}}\",\n  \"observacoes\": \"Check-up antes de viagem\",\n  \"status\": \"AGENDADA\",\n  \"petId\": {{petId}},\n  \"veterinarioId\": {{vetId}},\n  \"unidadeId\": {{unidadeId}}\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = new Date(Date.now() + 3 * 86400000);",
+                  "d.setUTCHours(13 + Math.floor(Math.random() * 6), [0, 15, 30, 45][Math.floor(Math.random() * 4)], 0, 0);",
+                  "pm.collectionVariables.set(\"dataConsulta\", d.toISOString().slice(0, 19));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Consulta criada (201)\", () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const c = pm.response.json();",
+                  "pm.test(\"Consulta nasce AGENDADA para o pet Thor\", () => {",
+                  "  pm.expect(c.status).to.eql(\"AGENDADA\");",
+                  "  pm.expect(String(c.petId ?? (c.pet && c.pet.id))).to.eql(String(pm.collectionVariables.get(\"petId\")));",
+                  "});",
+                  "pm.test(\"Responde em menos de 5 s\", () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+                  "pm.collectionVariables.set(\"consultaId\", c.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mesmo veterinário, mesmo horário",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenResp}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{dotnetUrl}}/api/clinico/consultas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataHora\": \"{{dataConsulta}}\",\n  \"observacoes\": \"Vacinação\",\n  \"status\": \"AGENDADA\",\n  \"petId\": {{petId}},\n  \"veterinarioId\": {{vetId}}\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Horário ocupado é recusado com 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Mensagem fala do conflito de agenda\", () => pm.expect(pm.response.text()).to.include(\"já tem uma consulta marcada\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AT06 - Agendamento inválido é bloqueado (Azure 248)",
+      "item": [
+        {
+          "name": "Consulta com data no passado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenResp}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{dotnetUrl}}/api/clinico/consultas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataHora\": \"2020-01-10T10:00:00\",\n  \"status\": \"AGENDADA\",\n  \"petId\": {{petId}},\n  \"veterinarioId\": {{vetId}}\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Data no passado é recusada\", () => pm.expect(pm.response.code).to.be.oneOf([400, 409, 422]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consulta sem o pet",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenResp}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{dotnetUrl}}/api/clinico/consultas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataHora\": \"{{dataConsulta}}\",\n  \"status\": \"AGENDADA\",\n  \"veterinarioId\": {{vetId}}\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Campo obrigatório ausente devolve 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AT07 - Tutor bloqueado na área clínica (Azure 183)",
+      "item": [
+        {
+          "name": "Responsável tenta gerar a análise de IA da consulta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenResp}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{dotnetUrl}}/api/clinico/consultas/{{consultaId}}/analise-ia",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transcricao\": \"Tentativa do tutor\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Ação exclusiva do veterinário devolve 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chamada ao Java sem token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": "{{javaUrl}}/api/pets"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Sem token o Java devolve 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AT08 - Só um endereço principal (Azure 223)",
+      "item": [
+        {
+          "name": "Primeiro endereço",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenResp}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{dotnetUrl}}/api/responsavel/{{responsavelId}}/enderecos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"logradouro\": \"Rua Augusta\",\n  \"numero\": \"500\",\n  \"bairro\": \"Consolação\",\n  \"cidade\": \"São Paulo\",\n  \"estado\": \"SP\",\n  \"cep\": \"01304000\",\n  \"principal\": true\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Endereço criado (201)\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"endereco1Id\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Segundo endereço marcado como principal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenResp}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{dotnetUrl}}/api/responsavel/{{responsavelId}}/enderecos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"logradouro\": \"Rua Vergueiro\",\n  \"numero\": \"1200\",\n  \"bairro\": \"Paraíso\",\n  \"cidade\": \"São Paulo\",\n  \"estado\": \"SP\",\n  \"cep\": \"04101000\",\n  \"principal\": true\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Endereço criado (201)\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Novo endereço é o principal\", () => pm.expect(pm.response.json().principal).to.be.true);",
+                  "pm.collectionVariables.set(\"endereco2Id\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar endereços",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenResp}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{dotnetUrl}}/api/responsavel/{{responsavelId}}/enderecos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200 OK\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "const lista = Array.isArray(corpo) ? corpo : (corpo.itens || corpo.items || corpo.dados || []);",
+                  "pm.test(\"Há 2 endereços e só 1 é principal\", () => {",
+                  "  pm.expect(lista).to.have.lengthOf(2);",
+                  "  pm.expect(lista.filter(e => e.principal)).to.have.lengthOf(1);",
+                  "});",
+                  "pm.test(\"O principal é o segundo endereço\", () => {",
+                  "  pm.expect(lista.find(e => e.principal).id).to.eql(Number(pm.collectionVariables.get(\"endereco2Id\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "99 - Limpeza",
+      "item": [
+        {
+          "name": "Apagar o pet de teste",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenVet}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{javaUrl}}/api/pets/{{petId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Pet removido\", () => pm.expect(pm.response.code).to.be.oneOf([200, 204]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
