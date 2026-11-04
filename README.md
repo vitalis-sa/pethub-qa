@@ -8,7 +8,7 @@ Equipe **Vitalis** · Challenge FIAP 2026 · empresa parceira CLYVO VET
 |---|---|
 | Plano de testes manuais (Azure DevOps) | [Test Plans do projeto `Sprint 4 – Azure DevOps`](https://dev.azure.com/RM565154/Sprint%204%20%E2%80%93%20Azure%20DevOps/_testPlans) |
 | Backlog com os PBIs testados (Azure Boards) | [Backlog do projeto `Sprint 4 – Azure DevOps`](https://dev.azure.com/RM565154/Sprint%204%20%E2%80%93%20Azure%20DevOps/_backlogs) |
-| Vídeo da automação (configuração, execução e resultados) | _cole aqui o link do YouTube (não listado)_ |
+| Vídeo da automação (configuração, execução e resultados) | _[Link do Vídeo no Youtube](https://youtu.be/DQS148BRc-c) (não listado)_ |
 | Coleção Postman da automação | [`automacao/PetHub-API.postman_collection.json`](automacao/PetHub-API.postman_collection.json) |
 
 ## Sistema sob teste
